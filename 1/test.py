@@ -18,5 +18,17 @@ class ChallengeTest(unittest.TestCase):
         chall = challenge()
         self.assertEqual(chall.calc(100756), 33583)
 
+    def test_mass2_12(self):
+        chall = challenge()
+        self.assertEqual(chall.calc2(12), 2)
+
+    def test_mass2_1969(self):
+        chall = challenge()
+        self.assertEqual(chall.calc2(1969), 966)
+
+    def test_mass2_100756(self):
+        chall = challenge()
+        self.assertEqual(chall.calc2(100756), 50346)
+
 if __name__ == '__main__':
     unittest.main()
