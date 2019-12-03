@@ -2,6 +2,14 @@ from main import challenge
 import unittest
 
 class ChallengeTest(unittest.TestCase):
+    def test_demo(self):
+        chall = challenge()
+        chall.load([
+            "R8,U5,L5,D3",
+            "U7,R6,D4,L4"
+        ])
+        self.assertEqual(chall.part1(), 6)
+
     def test_part1a(self):
         chall = challenge()
         chall.load([
