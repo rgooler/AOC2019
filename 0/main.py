@@ -2,7 +2,7 @@ class challenge:
     data = []
 
     def load(self, data):
-        self.data = data
+        self.data = [a.split(',') for a in data]
 
     def part1(self):
         return None
