@@ -12,7 +12,23 @@ class challenge:
         return length
 
     def part2(self):
-        return None
+        l1 = self.draw_line(0)
+        l2 = self.draw_line(1)
+        s = self.find_intersections(l1, l2)
+        length, coords = self.find_min_dist(s, l1, l2)
+        return length
+
+    def find_min_dist(self, s, l1, l2):
+        length = 0xffffffff
+        coords = (0,0)
+        for item in s:
+            x = l1.index(item)
+            y = l2.index(item)
+            # Index starts at 0, so add 2 to compensate, one for x and one for y
+            if abs(x) + abs(y) + 2 < length:
+                length = abs(x) + abs(y) + 2
+                coords = item
+        return (length, coords)
 
     def find_min_manhattan(self, s):
         length = 0xffffffff
@@ -65,7 +81,7 @@ def main():
         lines = fh.readlines()
         chall.load(lines)
     print(f"Part 1: {chall.part1()}")
-    
+    print(f"Part 1: {chall.part2()}")
 
 if __name__ == "__main__":
     main()
