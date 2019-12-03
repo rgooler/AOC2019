@@ -1,26 +1,39 @@
+import sys
+
 class challenge:
     code = []
     pointer = 0
     HALT = False
-    opcodes = [1,2,99]
+    opcodes = [1,2]
 
     def part1(self, code):
-        self.code = [int(x) for x in code]
-        self.eval()
-        return self.code
+        return self.part2(code, 12, 2)
 
-    def part2(self, code):
-        return None
+    def part2(self, code, a, b):
+        self.code = [int(x) for x in code]
+        self.code[1] = a
+        self.code[2] = b
+        return self.eval()
 
     def eval(self):
         while self.HALT == False:
+            self.code = [int(x) for x in self.code]
             instruction = self.code[self.pointer]
-            print(f"instruction: {instruction}")
+            #print(f"instruction: {instruction}, {self.pointer}")
             if instruction in self.opcodes:
-                print("Found instruction")
+                #print("Found instruction")
                 getattr(self, f"opcode_{instruction}")()
+            elif instruction == 99:
+                self.HALT = True
             else:
                 self.HALT = True
+                #if self.code[0] != 1:
+                #    print(f"ERR({instruction}): {self.code[0]}")
+        
+        try:
+            return 100 * self.code[self.pointer + 1] + self.code[self.pointer + 2]
+        except IndexError:
+            return 0
 
     def opcode_1(self):
         """
@@ -34,11 +47,11 @@ class challenge:
 
         a = self.code[self.code[self.pointer + 1]]
         b = self.code[self.code[self.pointer + 2]]
-        target = self.code[self.pointer + 3]
-        print(f"a: {a}\nb:{b}\nc:{target}")
-        self.code[target] = a + b
+        c = self.code[self.pointer + 3]
+        #print(f"a: {a}\nb:{b}\nc:{c}")
+        self.code[c] = a + b
         self.pointer = self.pointer + 4
-        print(f"pointer: {self.pointer} -- {self.code[self.pointer]}")
+        #print(f"pointer: {self.pointer} -- {self.code[self.pointer]}")
 
 
     def opcode_2(self):
@@ -49,11 +62,11 @@ class challenge:
         """
         a = self.code[self.code[self.pointer + 1]]
         b = self.code[self.code[self.pointer + 2]]
-        target = self.code[self.pointer + 3]
-        print(f"a: {a}\nb:{b}\nc:{target}")
-        self.code[target] = a * b
+        c = self.code[self.pointer + 3]
+        #print(f"a: {a}\nb:{b}\nc:{c}")
+        self.code[c] = a * b
         self.pointer = self.pointer + 4
-        print(f"pointer: {self.pointer} -- {self.code[self.pointer]}")
+        #print(f"pointer: {self.pointer} -- {self.code[self.pointer]}")
 
     def opcode_99(self):
         self.HALT = True
@@ -63,14 +76,19 @@ def main():
     with open('input') as fh:
         lines = fh.readlines()
         for line in lines:
-            a = line.split(',')
-            a[1] = '12'
-            a[2] = '2'
-            chall.part1(a)
-            #part2 = part2 + chall.part2(line.split(','))
+            l = line.split(',')
+            chall.part1(l)
+            print(f"Part 1: {chall.code}")
+            for a in range(0, 99):
+                for b in range(0, 99):
+                    y = challenge()
+                    y.part2(l.copy(), a, b)
+                    x = y.code[0]
+                    if x == 19690720:
+                        val = 100 * a + b
+                        print(f">> Part 2: {val} = {a},{b}")
+                        sys.exit(0)
 
-    print(f"Part 1: {chall.code}")
-    #print(f"Part 2: {part2}")
 
 if __name__ == "__main__":
     chall = challenge()
