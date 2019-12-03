@@ -1,6 +1,6 @@
 class challenge:
     data = []
-    
+
     def load(self, data):
         self.data = data
 
@@ -10,13 +10,13 @@ class challenge:
     def part2(self):
         return None
 
-if __name__ == "__main__":
+def main():
     chall = challenge()
     with open('input') as fh:
         lines = fh.readlines()
-        for line in lines:
-            part1 = part1 + chall.part1()
-            part2 = part2 + chall.part2()
+        chall.load(lines)
+    print(f"Part 1: {chall.part1()}")
+    print(f"Part 1: {chall.part2()}")
 
-    print(f"Part 1: {part1}")
-    print(f"Part 2: {part2}")
+if __name__ == "__main__":
+    main()
