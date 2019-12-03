@@ -1,4 +1,9 @@
 class challenge:
+    data = []
+    
+    def load(self, data):
+        self.data = data
+
     def part1(self):
         return None
 
