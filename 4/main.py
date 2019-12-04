@@ -26,15 +26,7 @@ class challenge:
         if not any(map(i.__contains__, ['11','22','33','44','55','66','77','88','99','00'])):
             return False
         # Increasing order
-        if int(i[1]) < int(i[0]):
-            return False
-        if int(i[2]) < int(i[1]):
-            return False
-        if int(i[3]) < int(i[2]):
-            return False
-        if int(i[4]) < int(i[3]):
-            return False
-        if int(i[5]) < int(i[4]):
+        if i != ''.join(sorted(i)):
             return False
         return True
 
