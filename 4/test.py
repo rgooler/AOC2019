@@ -14,10 +14,17 @@ class ChallengeTest(unittest.TestCase):
         chall = challenge()
         self.assertEqual(chall.test('123789'), False)
 
-    def test_part2(self):
+    def test_part2a(self):
         chall = challenge()
-        chall.load([])
-        self.assertEqual(chall.part2(), None)
+        self.assertEqual(chall.test2('112233'), True)
+
+    def test_part2b(self):
+        chall = challenge()
+        self.assertEqual(chall.test2('123444'), False)
+
+    def test_part2c(self):
+        chall = challenge()
+        self.assertEqual(chall.test2('111122'), True)
 
 if __name__ == '__main__':
     unittest.main()
