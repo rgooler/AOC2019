@@ -15,19 +15,16 @@ class challenge:
         self.e_input = e_input
         self.eval()
 
-    def part2(self, code, a, b):
-        self.code = [int(x) for x in code]
-        self.code[1] = a
-        self.code[2] = b
-        return self.eval()
-
+    def part2(self, code, e_input=5):
+        self.code = code
+        self.e_input = e_input
+        self.eval()
 
     def split_instruction(self, inst):
         s = str(inst).zfill(5)
         instruction = int(s[-2:])
         opcode = s[:-2]
         return (instruction, opcode)
-
 
     def disasm(self):
         logging.debug("="*80)
@@ -75,12 +72,10 @@ class challenge:
             # Grab in reverse order for convinience later
             instruction, opcode = self.split_instruction(self.code[self.pointer])
             self.disasm()
-            if instruction in self.opcodes:
+            try:
                 print(">> Found instruction")
                 getattr(self, f"opcode_{instruction}")(opcode)
-            elif instruction == 99:
-                self.HALT = True
-            else:
+            except:
                 self.HALT = True
                 print(f"ERR({self.code[self.pointer]}): {self.pointer} -> {self.code[self.pointer:self.pointer + 4]}")
         
@@ -122,12 +117,22 @@ class challenge:
         self.pointer = self.pointer + 4
 
     def opcode_3(self, opcode):
+        """
+        Opcode 3 takes a single integer as input and saves it to the address 
+        given by its only parameter. 
+        For example, the instruction 3,50 would take an input value and store it 
+        at address 50.
+        """
         print(f"opcode_3({opcode})  [[INPUT]]")
         ptr = self.code[self.pointer + 1]
         self.code[ptr] = self.e_input
         self.pointer = self.pointer + 2
 
     def opcode_4(self, opcode):
+        """
+        Opcode 4 outputs the value of its only parameter. 
+        For example, the instruction 4,50 would output the value at address 50.
+        """
         print(f"opcode_4({opcode})  [[OUTPUT]]")
         out = self.get(self.pointer + 1, opcode, 1)
         print(f">>>>> {out}")
@@ -145,6 +150,10 @@ def main():
             l = line.split(',')
             chall.part1(l, 1)
             print(f"Part 1: {chall.e_output}")
+            print(chall.code)
+            print("~" * 80)
+            chall.part2(l, 1)
+            print(f"Part 2: {chall.e_output}")
             print(chall.code)
 
 
