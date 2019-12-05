@@ -1,6 +1,6 @@
 import sys
 import logging
-logging.basicConfig(level=logging.DEBUG)
+
 
 class challenge:
     code = []
@@ -10,14 +10,23 @@ class challenge:
     e_input = None
     e_output = list()
 
+    def __init__(self, enable_logs=True):
+        if enable_logs :
+            logging.basicConfig(level=logging.DEBUG)
+        else:
+            logging.basicConfig(level=logging.CRITICAL)
+
+
     def part1(self, code, e_input=1):
         self.code = code
         self.e_input = e_input
+        self.e_output = list()
         self.eval()
 
     def part2(self, code, e_input=5):
         self.code = code
         self.e_input = e_input
+        self.e_output = list()
         self.eval()
 
     def split_instruction(self, inst):
@@ -34,7 +43,10 @@ class challenge:
         logging.debug("")
 
         for p in range(1,4):
-            # Param 1
+            try:
+                _ = self.code[self.pointer + p]
+            except IndexError:
+                break
             mode = self.mode(opcode, p)
             if(mode == 0):
                 # Position mode
@@ -67,17 +79,16 @@ class challenge:
    
     def eval(self):
         while self.HALT == False:
-            print("\n\n\n")
+            logging.info("\n\n\n")
             self.code = [int(x) for x in self.code]
             # Grab in reverse order for convinience later
             instruction, opcode = self.split_instruction(self.code[self.pointer])
             self.disasm()
             try:
-                print(">> Found instruction")
                 getattr(self, f"opcode_{instruction}")(opcode)
             except:
                 self.HALT = True
-                print(f"ERR({self.code[self.pointer]}): {self.pointer} -> {self.code[self.pointer:self.pointer + 4]}")
+                logging.error(f"ERR({self.code[self.pointer]}): {self.pointer} -> {self.code[self.pointer:self.pointer + 4]}")
         
         try:
             return 100 * self.code[self.pointer + 1] + self.code[self.pointer + 2]
@@ -108,7 +119,7 @@ class challenge:
         inputs instead of adding them. Again, the three integers after the 
         opcode indicate where the inputs and outputs are, not their values.
         """
-        print(f"opcode_2({opcode})  [[MULTIPLY]]")
+        logging.info(f"opcode_2({opcode})  [[MULTIPLY]]")
         a = self.get(self.pointer + 1, opcode, 1)
         b = self.get(self.pointer + 2, opcode, 2)
         c = self.code[self.pointer + 3]
@@ -123,7 +134,7 @@ class challenge:
         For example, the instruction 3,50 would take an input value and store it 
         at address 50.
         """
-        print(f"opcode_3({opcode})  [[INPUT]]")
+        logging.info(f"opcode_3({opcode})  [[INPUT]]")
         ptr = self.code[self.pointer + 1]
         self.code[ptr] = self.e_input
         self.pointer = self.pointer + 2
@@ -133,11 +144,68 @@ class challenge:
         Opcode 4 outputs the value of its only parameter. 
         For example, the instruction 4,50 would output the value at address 50.
         """
-        print(f"opcode_4({opcode})  [[OUTPUT]]")
+        logging.info(f"opcode_4({opcode})  [[OUTPUT]]")
         out = self.get(self.pointer + 1, opcode, 1)
-        print(f">>>>> {out}")
+        logging.info(f">>>>> {out}")
         self.e_output.append(out)
         self.pointer = self.pointer + 2
+
+    def opcode_5(self, opcode):
+        """
+        Opcode 5 is jump-if-true: 
+          if the first parameter is non-zero, it sets the instruction pointer to 
+          the value from the second parameter. 
+          Otherwise, it does nothing.
+        """
+        logging.info(f"opcode_5({opcode})  [[JUMP_IF_TRUE]]")
+        a = self.get(self.pointer + 1, opcode, 1)
+        if a:
+            self.pointer = self.get(self.pointer + 2, opcode, 2)
+        else:
+            self.pointer = self.pointer + 3
+
+    def opcode_6(self, opcode):
+        """
+        Opcode 6 is jump-if-false: 
+            if the first parameter is zero, it sets the instruction pointer to 
+            the value from the second parameter. 
+            Otherwise, it does nothing.
+        """
+        logging.info(f"opcode_6({opcode})  [[JUMP_IF_FALSE]]")
+        a = self.get(self.pointer + 1, opcode, 1)
+        if a == 0:
+            self.pointer = self.get(self.pointer + 2, opcode, 2)
+        else:
+            self.pointer = self.pointer + 3
+
+    def opcode_7(self, opcode):
+        """
+        Opcode 7 is less than: 
+            if the first parameter is less than the second parameter, it stores 
+            1 in the position given by the third parameter.
+            Otherwise, it stores 0.
+        """
+        logging.info(f"opcode_7({opcode})  [[LESS_THAN]]")
+        a = self.get(self.pointer + 1, opcode, 1)
+        b = self.get(self.pointer + 2, opcode, 2)
+        c = self.code[self.pointer + 3]
+        logging.info(f"Storing {a * b} at address {c}")
+        self.code[c] = a < b
+        self.pointer = self.pointer + 4
+
+    def opcode_8(self, opcode):
+        """
+        Opcode 8 is equals: 
+            if the first parameter is equal to the second parameter, it stores 1
+            in the position given by the third parameter. Otherwise, it stores 0.
+        """
+        logging.info(f"opcode_8({opcode})  [[EQUALS]]")
+        a = self.get(self.pointer + 1, opcode, 1)
+        b = self.get(self.pointer + 2, opcode, 2)
+        c = self.code[self.pointer + 3]
+        logging.info(f"Storing {a * b} at address {c}")
+        self.code[c] = a == b
+        self.pointer = self.pointer + 4
 
     def opcode_99(self):
         self.HALT = True
@@ -148,11 +216,11 @@ def main():
         lines = fh.readlines()
         for line in lines:
             l = line.split(',')
-            chall.part1(l, 1)
-            print(f"Part 1: {chall.e_output}")
-            print(chall.code)
+            #chall.part1(l)
+            #print(f"Part 1: {chall.e_output}")
+            #print(chall.code)
             print("~" * 80)
-            chall.part2(l, 1)
+            chall.part2(l)
             print(f"Part 2: {chall.e_output}")
             print(chall.code)
 
@@ -160,8 +228,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-    #chall.part1([1002,4,3,4,33], 1)
-    #print("*"*80)
-    #print(f"Part 1: {chall.e_output}")
-    #print(chall.code)
-
