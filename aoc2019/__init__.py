@@ -1,3 +1,4 @@
+from .amplifiers import *
 from .cpu import *
 from .crack import *
 from .map import *
