@@ -1,6 +1,6 @@
 import re
 
-class challenge:
+class Crack:
     data = []
 
     def load(self, data):

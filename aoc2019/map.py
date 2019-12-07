@@ -2,7 +2,7 @@
 
 from graph_tool.all import *
 
-class challenge:
+class Map:
     data = []
 
     def load(self, data):
@@ -34,14 +34,11 @@ class challenge:
     def part1(self):
         total = 0
         for planet in self.planets:
-            total += self.to_COM(planet)
+            total += self.calc_distance(planet, 'COM')
         return total
 
     def part2(self):
         return self.calc_distance('YOU', 'SAN')
-
-    def to_COM(self, src):
-        return self.calc_distance(src, 'COM') - 2
 
     def calc_distance(self, src, dest):
         return shortest_distance(
@@ -49,14 +46,3 @@ class challenge:
             self.planets[src],
             self.planets[dest]
             )
-
-def main():
-    chall = challenge()
-    with open('input') as fh:
-        lines = fh.readlines()
-        chall.load(lines)
-    print(f"Part 1: {chall.part1()}")
-    print(f"Part 1: {chall.part2()}")
-
-if __name__ == "__main__":
-    main()
