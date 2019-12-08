@@ -1,6 +1,7 @@
 #!/usr/bin/env python 
 
-from graph_tool.all import *
+from graph_tool import Graph
+from graph_tool.topology import shortest_distance
 
 class Map:
     data = []

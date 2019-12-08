@@ -4,21 +4,24 @@ import logging
 class CPU:
     code = []
     pointer = 0
+    BLOCKED = False
     HALT = False
-    e_input = None
-    e_output = list()
+    e_input = []
+    e_output = []
+    exit_code = 0
 
     def __init__(self, enable_logs=True):
         if enable_logs :
             logging.basicConfig(level=logging.DEBUG)
         else:
             logging.basicConfig(level=logging.CRITICAL)
+        e_input = []
+        e_output = []
 
-
-    def run(self, code, e_input=1):
+    def run(self, code):
         self.code = code
-        self.e_input = e_input
-        self.e_output = list()
+        self.e_input = []
+        self.e_output = []
         return self.eval()
 
     def split_instruction(self, inst):
@@ -71,21 +74,33 @@ class CPU:
    
     def eval(self):
         while self.HALT == False:
-            logging.info("\n\n\n")
-            self.code = [int(x) for x in self.code]
-            # Grab in reverse order for convinience later
-            instruction, opcode = self.split_instruction(self.code[self.pointer])
-            self.disasm()
-            try:
-                getattr(self, f"opcode_{instruction}")(opcode)
-            except:
-                self.HALT = True
-                logging.error(f"ERR({self.code[self.pointer]}): {self.pointer} -> {self.code[self.pointer:self.pointer + 4]}")
-        
+            self.tick()
+            if self.BLOCKED == True:
+                # Pause CPU if blocked
+                return
         try:
-            return 100 * self.code[self.pointer + 1] + self.code[self.pointer + 2]
+            self.exit_code = 100 * self.code[self.pointer + 1] + self.code[self.pointer + 2]
         except IndexError:
-            return 0
+            pass
+        return self.exit_code
+
+    def tick(self):
+        logging.info("\n\n\nTICK\n")
+        self.code = [int(x) for x in self.code]
+        # Grab in reverse order for convinience later
+        instruction, opcode = self.split_instruction(self.code[self.pointer])
+        self.disasm()
+        try:
+            getattr(self, f"opcode_{instruction}")(opcode)
+        except:
+            self.HALT = True
+            logging.error(f"ERR({self.code[self.pointer]}): {self.pointer} -> {self.code[self.pointer:self.pointer + 4]}")
+
+    def input(self, data):
+        self.e_input.append(data)
+        if self.BLOCKED == True:
+            self.BLOCKED = False
+            self.eval()
 
     def opcode_1(self, opcode):
         """
@@ -127,8 +142,11 @@ class CPU:
         at address 50.
         """
         logging.info(f"opcode_3({opcode})  [[INPUT]]")
+        if self.e_input == []:
+            self.BLOCKED = True
+            return
         ptr = self.code[self.pointer + 1]
-        self.code[ptr] = self.e_input
+        self.code[ptr] = int(self.e_input.pop(0))
         self.pointer = self.pointer + 2
 
     def opcode_4(self, opcode):

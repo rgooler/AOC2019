@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-from aoc2019 import CPU
+from aoc2019 import Amplifier
 
 def part1(code):
     chall = CPU(False)
@@ -20,4 +20,8 @@ def main():
             part2(l)
 
 if __name__ == "__main__":
-    main()
+        phase_sequence = [4,3,2,1,0]
+        code = [3,15,3,16,1002,16,10,16,1,16,15,15,4,15,99,0,0]
+        chall = Amplifier(code=code, enable_logs=False, num_amplifiers=5)
+        r = chall.run(phase_sequence)
+        

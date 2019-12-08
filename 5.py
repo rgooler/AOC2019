@@ -8,9 +8,11 @@ def main():
         lines = fh.readlines()
         for line in lines:
             l = line.split(',')
-            chall.run(l, 1)
+            chall.run(l)
+            chall.input(1)
             print(f"Part 1: {chall.e_output[-1]}")
-            chall.run(l, 5)
+            chall.run(l)
+            chall.input(5)
             print(f"Part 2: {chall.e_output}")
             #print(chall.code)
 
