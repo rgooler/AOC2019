@@ -30,6 +30,21 @@ class Amplifier:
             input_signal = amp.e_output[-1]
             ## print(amp.code)
             ## print(input_signal)
+        
+        # The end result is the max thruster signal
+        return input_signal
+
+    def run_feedback(self, phase_sequence=[], input_signal=0):
+        input_signal = self.run(phase_sequence, input_signal)
+        while True:
+            for amp in self.amplifiers:
+                amp.input(input_signal)
+                input_signal = amp.e_output[-1]
+                ## print(amp.code)
+                ## print(f"{amp.pointer} => {amp.code[amp.pointer:amp.pointer + 3]}")
+                ## print(amp.e_output)
+            if [x.HALT for x in self.amplifiers].count(True) == len(self.amplifiers):
+                return input_signal
 
         # The end result is the max thruster signal
         return input_signal
