@@ -1,11 +1,21 @@
 #!/usr/bin/env python3
 
 from aoc2019 import Amplifier
+import itertools
 
 def part1(code):
-    chall = CPU(False)
-    chall.run(l, 1)
-    print(f"Part 1: {chall.e_output}")
+    phase_sequence = [0,1,2,3,4]
+
+    max_thrust = 0
+    winning_seq = []
+
+    for sequence in itertools.permutations(phase_sequence):
+        chall = Amplifier(code=code.copy(), enable_logs=False)
+        r = chall.run(list(sequence).copy())
+        if r > max_thrust:
+            max_thrust = r
+            winning_seq = sequence
+    print(f"Part 1: {max_thrust} - {winning_seq}")
     pass
 
 def part2(code):
@@ -20,8 +30,5 @@ def main():
             part2(l)
 
 if __name__ == "__main__":
-        phase_sequence = [4,3,2,1,0]
-        code = [3,15,3,16,1002,16,10,16,1,16,15,15,4,15,99,0,0]
-        chall = Amplifier(code=code, enable_logs=False, num_amplifiers=5)
-        r = chall.run(phase_sequence)
+        main()
         
