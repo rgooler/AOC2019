@@ -102,3 +102,8 @@ venv.bak/
 
 # mypy
 .mypy_cache/
+
+
+# Mistakes
+test/test_.py
+.py
