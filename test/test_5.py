@@ -9,6 +9,7 @@ class Day5(unittest.TestCase):
         code = [3,0,4,0,99]
         chall.run(code)
         chall.input(55)
+        chall.clean()
         self.assertEqual(chall.e_output, [55])
         
     def test_part1_b(self):
@@ -16,6 +17,7 @@ class Day5(unittest.TestCase):
         code = [1002,4,3,4,33]
         chall.run(code)
         chall.input(55)
+        chall.clean()
         self.assertEqual(chall.code[4], 99)
 
     def test_part2_a_PASS(self):
@@ -26,6 +28,7 @@ class Day5(unittest.TestCase):
         chall = CPU(False)
         chall.run(code)
         chall.input(8)
+        chall.clean()
         self.assertEqual(chall.code, [3, 9, 8, 9, 10, 9, 4, 9, 99, 1, 8])
         self.assertEqual(chall.e_output, [1])
 
@@ -34,6 +37,7 @@ class Day5(unittest.TestCase):
         chall = CPU(False)
         chall.run(code)
         chall.input(9)
+        chall.clean()
         self.assertEqual(chall.e_output, [0])
 
     def test_part2_b_PASS(self):
@@ -44,6 +48,7 @@ class Day5(unittest.TestCase):
         chall = CPU(False)
         chall.run(code)
         chall.input(7)
+        chall.clean()
         self.assertEqual(chall.e_output, [1])
 
     def test_part2_b_FAIL(self):
@@ -51,6 +56,7 @@ class Day5(unittest.TestCase):
         chall = CPU(False)
         chall.run(code)
         chall.input(8)
+        chall.clean()
         self.assertEqual(chall.e_output, [0])
 
     def test_part2_c_PASS(self):
@@ -61,6 +67,7 @@ class Day5(unittest.TestCase):
         chall = CPU(False)
         chall.run(code)
         chall.input(8)
+        chall.clean()
         self.assertEqual(chall.e_output, [1])
 
     def test_part2_c_FAIL(self):
@@ -68,6 +75,7 @@ class Day5(unittest.TestCase):
         chall = CPU(False)
         chall.run(code)
         chall.input(7)
+        chall.clean()
         self.assertEqual(chall.e_output, [0])
 
     def test_part2_d_PASS(self):
@@ -78,6 +86,7 @@ class Day5(unittest.TestCase):
         chall = CPU(False)
         chall.run(code)
         chall.input(7)
+        chall.clean()
         self.assertEqual(chall.e_output, [1])
 
     def test_part2_d_FAIL(self):
@@ -85,6 +94,7 @@ class Day5(unittest.TestCase):
         chall = CPU(False)
         chall.run(code)
         chall.input(8)
+        chall.clean()
         self.assertEqual(chall.e_output, [0])
     
     def test_part2_e_PASS(self):
@@ -96,6 +106,7 @@ class Day5(unittest.TestCase):
         chall = CPU(False)
         chall.run(code)
         chall.input(1)
+        chall.clean()
         self.assertEqual(chall.e_output, [1])
 
     def test_part2_e_FAIL(self):
@@ -103,6 +114,7 @@ class Day5(unittest.TestCase):
         chall = CPU(False)
         chall.run(code)
         chall.input(0)
+        chall.clean()
         self.assertEqual(chall.e_output, [0])
 
     def test_part2_f_LT(self):
@@ -116,6 +128,7 @@ class Day5(unittest.TestCase):
         chall = CPU(False)
         chall.run(code)
         chall.input(7)
+        chall.clean()
         self.assertEqual(chall.e_output, [999])
 
     def test_part2_f_EQ(self):
@@ -129,6 +142,7 @@ class Day5(unittest.TestCase):
         chall = CPU(False)
         chall.run(code)
         chall.input(8)
+        chall.clean()
         self.assertEqual(chall.e_output, [1000])
 
     def test_part2_f_GT(self):
@@ -142,6 +156,7 @@ class Day5(unittest.TestCase):
         chall = CPU(False)
         chall.run(code)
         chall.input(9)
+        chall.clean()
         self.assertEqual(chall.e_output, [1001])
 
 if __name__ == '__main__':

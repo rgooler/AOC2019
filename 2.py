@@ -7,21 +7,25 @@ def main():
         lines = fh.readlines()
         for line in lines:
             code = line.split(',')
-            cpu = CPU(False)
-            cpu.run(code.copy())
-            print(f"Part 1: {cpu.code[0]}")
+        
+        cpu = CPU(False)
+        cpu.run(code.copy())
+        print(f"Part 1: {cpu.code[0]}")
+        del cpu
 
-            for a in range(0, 99):
-                for b in range(0, 99):
-                    c = code.copy()
-                    c[1] = a
-                    c[2] = b
-                    cpu.run(c)
-                    x = cpu.code[0]
-                    if x == 19690720:
-                        val = 100 * a + b
-                        print(f"Part 2: {val} = {a},{b}")
-                        return
+        for a in range(0, 99):
+            for b in range(0, 99):
+                cpu = CPU(False)
+                c = code.copy()
+                c[1] = a
+                c[2] = b
+                cpu.run(c)
+                x = cpu.code[0]
+                if x == 19690720:
+                    val = 100 * a + b
+                    print(f"Part 2: {val} = {a},{b}")
+                    return
+                del cpu
 
 if __name__ == "__main__":
     main()

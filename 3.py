@@ -1,5 +1,6 @@
-from aoc2019 import Wires
+#!/usr/bin/env python3
 
+from aoc2019 import Wires
 
 def main():
     chall = Wires()
@@ -7,7 +8,7 @@ def main():
         lines = fh.readlines()
         chall.load(lines)
     print(f"Part 1: {chall.min_length_manhattan()}")
-    print(f"Part 1: {chall.min_length()}")
+    print(f"Part 2: {chall.min_length()}")
 
 if __name__ == "__main__":
     main()

@@ -2,13 +2,14 @@ import sys
 import logging
 
 class CPU:
-    code = []
+    code = None
     pointer = 0
     BLOCKED = False
     HALT = False
     e_input = []
     e_output = []
     exit_code = 0
+    relative_base = 0
 
     def __init__(self, enable_logs=True):
         if enable_logs :
@@ -34,7 +35,7 @@ class CPU:
         logging.debug("="*80)
         logging.debug(f"code: {self.code[self.pointer:self.pointer + 4]}           @ {self.pointer}")
         instruction, opcode = self.split_instruction(self.code[self.pointer])
-        logging.debug(f"inst: {instruction}    opcode: {opcode}")
+        logging.debug(f"inst: {instruction}    opcode: {opcode}     rel: {self.relative_base}")
         logging.debug("")
 
         for p in range(1,4):
@@ -43,35 +44,101 @@ class CPU:
             except IndexError:
                 break
             mode = self.mode(opcode, p)
-            if(mode == 0):
+            if mode == 0:
                 # Position mode
                 try:
-                    logging.debug(f"param {p}: {mode} || {self.code[self.pointer + p]} => {self.code[self.code[self.pointer + p]]}")
+                    target = self.get_mode(self.pointer + p, mode)
+                    logging.debug(f"|| param {p}: {mode} || {target} => {self.code[target]}")
                 except IndexError:
-                    logging.debug(f"param {p}: {mode} || {self.code[self.pointer + p]} => ERR")
-            else:
+                    logging.debug(f"|| param {p}: {mode} || {self.code[self.pointer + p]} => ERR")
+            elif mode == 1:
                 # Immediate mode
-                logging.debug(f"param {p}: {mode} || {self.code[self.pointer + p]}")
+                logging.debug(f"|| param {p}: {mode} || {self.code[self.pointer + p]}")
+            elif mode == 2:
+                # Relative mode
+                try:
+                    target = self.get_mode(self.pointer + p, mode)
+                    logging.info(f"target: {target}")
+                    logging.debug(f"|| param {p}: {mode} || {self.code[self.pointer + p]} ({self.relative_base + self.code[self.pointer + p]}) ~> {target}")
+                except IndexError:
+                    logging.debug(f"|| param {p}: {mode} || {self.code[self.pointer + p]} ({self.relative_base + self.code[self.pointer + p]}) ~> ERR")
+            else:
+                print(f"ERR: Unknown mode {mode}")
 
         logging.debug("="*80)
 
     def mode(self, opcode, opcode_index):
+        logging.info(f"mode(self, {opcode}, {opcode_index})")
         try:
             return int(opcode[opcode_index * -1])
         except:
             # No opcode? Treat as mode 0 (( Position mode))
             return 0
 
-    def get(self, ptr, opcode, opcode_index):
-        mode = self.mode(opcode, opcode_index)
+    def get_mode(self, ptr, mode):
+        ptr = int(ptr)
+        logging.info(f"get_mode(self, {ptr}, {mode})")
+        if ptr < 0:
+            self.HALT = True
+            print("Get from negative index")
+            return None
+        if mode == 0:
+            # Position Mode
+            logging.info("~ Position Mode [0] ~")
+            rptr = int(self.code[ptr])
+            logging.info(f"{rptr} > {len(self.code)} = {rptr > len(self.code)}")
+            if rptr > len(self.code):
+                howmany = rptr - len(self.code)
+                print(f">> howmany:{howmany}")
+                self.code.extend(['0'] * howmany )
+                logging.info(f"Extended code: {self.code}")
+            else:
+                logging.info("Not extending")
+            return int(self.code[rptr])
+        elif mode == 1:
+            # Intermediate Mode
+            logging.info("~ Immediate Mode [1] ~")
+            return int(self.code[ptr])
+        elif mode == 2:
+            # Relative mode
+            logging.info("~ Relative Mode [2] ~")
+            rptr = self.relative_base + self.code[ptr]
+            logging.info(f"rptr: {rptr}")
+            if rptr > len(self.code):
+                howmany = rptr - len(self.code)
+                self.code.extend(['0'] * howmany )
+                logging.info(f"Extended code: {self.code}")
+            return int(self.code[rptr])
 
-        if mode == 1:
-            out = self.code[ptr]
-            return int(out)
-        elif mode == 0:
-            out = self.code[self.code[ptr]]
-            return int(out)
-   
+    def put_mode(self, ptr, mode, value):
+        if mode == 0:
+            self.code[self.code[ptr]] = value
+        elif mode == 1:
+            self.code[ptr] = value
+        elif mode == 2:
+            rptr = self.relative_base + ptr
+            if rptr > len(self.code):
+                self.code.extend(['0'] * rptr - len(self.code))
+            self.code[rptr] = value
+
+    def get(self, ptr, opcode, opcode_index):
+        logging.info(f"get(self, {ptr}, {opcode}, {opcode_index})")
+        if ptr > len(self.code):
+            howmany = ptr - len(self.code)
+            logging.info("extending by {howmany}")
+            self.code.extend(['0'] * howmany)
+
+        mode = self.mode(opcode, opcode_index)
+        return self.get_mode(ptr, mode)
+
+    def put(self, ptr, opcode, opcode_index, value):
+        logging.info(f"put(self, {ptr}, {opcode}, {opcode_index}, {value})")
+        if ptr > len(self.code):
+            self.code.extend(['0'] * ptr - len(self.code))
+
+        mode = self.mode(opcode, opcode_index)
+        self.put_mode(ptr, mode, value)
+
     def eval(self):
         while self.HALT == False:
             self.tick()
@@ -79,10 +146,14 @@ class CPU:
                 # Pause CPU if blocked
                 return
         try:
-            self.exit_code = 100 * self.code[self.pointer + 1] + self.code[self.pointer + 2]
+            self.exit_code = 100 * int(self.code[self.pointer + 1]) + int(self.code[self.pointer + 2])
         except IndexError:
             pass
         return self.exit_code
+
+    def clean(self):
+        while self.code[-1] == 0 or self.code[-1] == '0':
+            self.code.pop()
 
     def tick(self):
         logging.info("\n\n\nTICK\n")
@@ -92,8 +163,9 @@ class CPU:
         self.disasm()
         try:
             getattr(self, f"opcode_{instruction}")(opcode)
-        except:
+        except AttributeError:
             self.HALT = True
+            logging.error(f"TICK ERROR RUNNING opcode_{instruction} WITH {opcode}")
             logging.error(f"ERR({self.code[self.pointer]}): {self.pointer} -> {self.code[self.pointer:self.pointer + 4]}")
 
     def input(self, data):
@@ -113,10 +185,10 @@ class CPU:
         """
         logging.info(f"opcode_1({opcode})  [[ADD]]")
         a = self.get(self.pointer + 1, opcode, 1)
+        logging.info(f"a: {a}")
         b = self.get(self.pointer + 2, opcode, 2)
-        c = self.code[self.pointer + 3]
-        logging.info(f"Storing {a + b} at address {c}")
-        self.code[c] = a + b
+        logging.info(f"Storing {a + b} ")
+        self.put(self.pointer + 3, opcode, 3, a + b)
         self.pointer = self.pointer + 4
 
 
@@ -129,9 +201,8 @@ class CPU:
         logging.info(f"opcode_2({opcode})  [[MULTIPLY]]")
         a = self.get(self.pointer + 1, opcode, 1)
         b = self.get(self.pointer + 2, opcode, 2)
-        c = self.code[self.pointer + 3]
-        logging.info(f"Storing {a * b} at address {c}")
-        self.code[c] = a * b
+        logging.info(f"Storing {a * b} ")
+        self.put(self.pointer + 3, opcode, 3, a * b)
         self.pointer = self.pointer + 4
 
     def opcode_3(self, opcode):
@@ -145,8 +216,7 @@ class CPU:
         if self.e_input == []:
             self.BLOCKED = True
             return
-        ptr = self.code[self.pointer + 1]
-        self.code[ptr] = int(self.e_input.pop(0))
+        self.put(self.pointer + 1, opcode, 1, int(self.e_input.pop(0)))
         self.pointer = self.pointer + 2
 
     def opcode_4(self, opcode):
@@ -198,9 +268,8 @@ class CPU:
         logging.info(f"opcode_7({opcode})  [[LESS_THAN]]")
         a = self.get(self.pointer + 1, opcode, 1)
         b = self.get(self.pointer + 2, opcode, 2)
-        c = self.code[self.pointer + 3]
-        logging.info(f"Storing {a * b} at address {c}")
-        self.code[c] = a < b
+        logging.info(f"Storing {a < b} ")
+        self.put(self.pointer + 3, opcode, 3, a < b)
         self.pointer = self.pointer + 4
 
     def opcode_8(self, opcode):
@@ -212,10 +281,19 @@ class CPU:
         logging.info(f"opcode_8({opcode})  [[EQUALS]]")
         a = self.get(self.pointer + 1, opcode, 1)
         b = self.get(self.pointer + 2, opcode, 2)
-        c = self.code[self.pointer + 3]
-        logging.info(f"Storing {a * b} at address {c}")
-        self.code[c] = a == b
+        logging.info(f"Storing {a == b} ")
+        self.put(self.pointer + 3, opcode, 3, a == b)
         self.pointer = self.pointer + 4
 
-    def opcode_99(self):
+    def opcode_9(self, opcode):
+        """
+        Opcode 9 adjusts the relative base by the value of its only parameter. 
+        The relative base increases (or decreases, if the value is negative) by the value of the parameter.
+        """
+        logging.info(f"opcode_9({opcode})  [[RELATIVE_BASE_OFFSET]]")
+        self.relative_base = self.relative_base + self.get(self.pointer + 1, opcode, 1)
+        logging.info(f">>>>> {self.relative_base}")
+        self.pointer = self.pointer + 2
+
+    def opcode_99(self, opcode):
         self.HALT = True

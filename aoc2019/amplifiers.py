@@ -19,7 +19,7 @@ class Amplifier:
     def run(self, phase_sequence=[], input_signal=0):
         for amp in self.amplifiers:
             ## print("*"*80)
-            amp.run(self.code.copy())
+            amp.run(self.code)
             # Set phase
             phase = phase_sequence.pop(0)
             ## print(f"Setting phase to {phase}")

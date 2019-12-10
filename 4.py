@@ -1,5 +1,6 @@
-from aoc2019 import Crack
+#!/usr/bin/env python3 
 
+from aoc2019 import Crack
 
 def main():
     chall = Crack()
