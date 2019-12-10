@@ -47,7 +47,7 @@ class CPU:
             if mode == 0:
                 # Position mode
                 try:
-                    target = self.get_mode(self.pointer + p, mode)
+                    target = self.get_mode(self.pointer + p, mode, True)
                     logging.debug(f"|| param {p}: {mode} || {target} => {self.code[target]}")
                 except IndexError:
                     logging.debug(f"|| param {p}: {mode} || {self.code[self.pointer + p]} => ERR")
@@ -57,7 +57,7 @@ class CPU:
             elif mode == 2:
                 # Relative mode
                 try:
-                    target = self.get_mode(self.pointer + p, mode)
+                    target = self.get_mode(self.pointer + p, mode, True)
                     logging.info(f"target: {target}")
                     logging.debug(f"|| param {p}: {mode} || {self.code[self.pointer + p]} ({self.relative_base + self.code[self.pointer + p]}) ~> {target}")
                 except IndexError:
@@ -75,7 +75,7 @@ class CPU:
             # No opcode? Treat as mode 0 (( Position mode))
             return 0
 
-    def get_mode(self, ptr, mode):
+    def get_mode(self, ptr, mode, diag=False):
         ptr = int(ptr)
         logging.info(f"get_mode(self, {ptr}, {mode})")
         if ptr < 0:
@@ -87,14 +87,17 @@ class CPU:
             logging.info("~ Position Mode [0] ~")
             rptr = int(self.code[ptr])
             logging.info(f"{rptr} > {len(self.code)} = {rptr > len(self.code)}")
-            if rptr > len(self.code):
+            if rptr >= len(self.code) and diag == False:
                 howmany = rptr - len(self.code)
-                print(f">> howmany:{howmany}")
+                logging.info(f">> howmany:{howmany}")
                 self.code.extend(['0'] * howmany )
                 logging.info(f"Extended code: {self.code}")
             else:
                 logging.info("Not extending")
-            return int(self.code[rptr])
+            try:
+                return int(self.code[rptr])
+            except IndexError:
+                return 0
         elif mode == 1:
             # Intermediate Mode
             logging.info("~ Immediate Mode [1] ~")
@@ -104,21 +107,36 @@ class CPU:
             logging.info("~ Relative Mode [2] ~")
             rptr = self.relative_base + self.code[ptr]
             logging.info(f"rptr: {rptr}")
-            if rptr > len(self.code):
+            if rptr >= len(self.code) and diag == False:
                 howmany = rptr - len(self.code)
                 self.code.extend(['0'] * howmany )
                 logging.info(f"Extended code: {self.code}")
-            return int(self.code[rptr])
+            try:
+                return int(self.code[rptr])
+            except IndexError:
+                return 0
 
     def put_mode(self, ptr, mode, value):
+        logging.info(f"put_mode(self, {ptr}, {mode}, {value}):")
         if mode == 0:
-            self.code[self.code[ptr]] = value
+            logging.info("+ Position Mode [0] +")
+            rptr = self.code[ptr]
+            logging.info(f"rptr: {rptr}/{len(self.code)}")
+            if rptr >= len(self.code):
+                logging.info(">> extending...")
+                howmany = rptr - len(self.code) + 1
+                self.code.extend(['0'] * howmany)
+                logging.info(f"~~~ {howmany}, {len(self.code)} -=- {rptr}")
+            self.code[rptr] = value
         elif mode == 1:
+            logging.info("+ Immediate Mode [1] +")
             self.code[ptr] = value
         elif mode == 2:
+            logging.info("+ Relative Mode [2] +")
             rptr = self.relative_base + ptr
-            if rptr > len(self.code):
-                self.code.extend(['0'] * rptr - len(self.code))
+            if rptr >= len(self.code):
+                howmany = rptr - len(self.code)
+                self.code.extend(['0'] * howmany)
             self.code[rptr] = value
 
     def get(self, ptr, opcode, opcode_index):
